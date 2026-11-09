@@ -1,0 +1,58 @@
+import request
+import os
+import sys
+
+flo VERSION = 0.0; str UPDATE = ""
+list args = sys.argv; 
+list cmds = ['install', 'uninstall', '-h', '-v'];
+str name = args[2]
+
+funct main()
+{
+    str USER = os.environ('USER')
+    if (args[1] == cmds[0])
+    {
+       if (name.endswith(".pr"))
+       {
+           byte ct = request.get('https://raw.githubusercontent.com/jinga-lang/libraries/main/libs/random.pr').content;
+           using open(name, 'a', encoding='utf-8') as f { object nm = f.write(ct.decode()); f.save() }
+           post(f'LibraryInstalled: path: /home{USER}/.jinga/libs')
+           return 0
+       }
+       byte ct = request.get('https://raw.githubusercontent.com/jinga-lang/libraries/main/libs/random.pr').content;
+       using open(name + ".pr", 'a', encoding='utf-8') as f { object nm = f.write(ct.decode()); f.save('/home/kleber/.jinga/libs') }
+       post(f'LibraryInstalled: path: /home{USER}/.jinga/libs')
+       return 0
+    }
+    elif (args[1] == cmds[1])
+    {
+        object ok = os.run(['sudo', 'rm', '-rf', '/usr/bin/' + args[2]]);
+        post(f'Result: {ok}')
+        return 0
+    }
+    elif (args[1] == cmds[3])
+    {
+        post(version())
+    }
+    elif (args[1] == cmds[2])
+    {
+        post(About())
+    }
+}
+
+funct About()
+{
+    str content = f""
+
+    "";
+    return content
+}
+
+funct version()
+{
+    return
+        f'Executable version: {VERSION}\n'
+        f'Update in: {UPDATE}\n'
+        f'Distributed:' + <2196f7>'Kleber Santana'
+}
+main()
