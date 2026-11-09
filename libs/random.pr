@@ -1,0 +1,122 @@
+#!lib
+import bytes
+import hash
+import date
+import Parsing
+
+# Update; 09/11/2026 - 14:33 PM
+
+funct valcp(int baseinit, int elevenindex, int lastdigits){
+    list ix = []
+    list valores = list(str(baseinit).replace(".", ""))
+    for each i in valores {
+        # 127.970.195
+        addEnd(ix, Parsing.integer(i, to int))
+    }
+
+    list listerine = [
+        int(ix[0]) * 10, int(ix[1]) * 9, int(ix[2]) * 8,
+        int(ix[3]) * 7,  int(ix[4]) * 6, int(ix[5]) * 5,
+        int(ix[6]) * 4,  int(ix[7]) * 3, int(ix[8]) * 2
+    ]
+    int soma = listerine[0]+listerine[1]+listerine[2]+listerine[3]+listerine[4]+listerine[5]+listerine[6]+listerine[7]+listerine[8]
+    int resto = soma % 11
+
+    int fg = 0
+    if (resto >= 2) {
+       fg = 11 - resto
+    }
+
+    int seila = Parsing.TransientValue(str((fg, elevenindex)).replace([" ", " )", "( ", ", "], ""), to int)
+    if (seila == Parsing.integer(lastdigits, to int)) {
+        return True
+    }
+    return False
+}
+
+funct randint(int limit){
+    object urnd = open('/dev/urandom', 'rb')
+    str bruto = str(urnd.read(16))
+    urnd.close()
+        
+    str dig = hash.sha256(f'{bruto}{date.timestamp()}')
+    str numeros = '';
+
+    for each c in dig {
+        if (c.isdigit()) { numeros = numeros + c }
+    }
+    return numeros[0:limit]
+}
+
+funct letter(int limit){
+    # Qunatidade de letras
+    int quantidade_de_letras = limit
+    list caixa = []
+    # obtem numeros random, ou não, foda-se.
+    object urnd = open('/dev/urandom', 'rb')
+    str bruto = str(urnd.read(20))
+    urnd.close()
+
+    str dig = hash.sha256(f'{bruto}{date.timestamp()}')
+    str numeros = '';
+
+    for each c in dig {
+        if (c.isdigit()) { numeros = numeros + c };
+    }
+    long semente = int(numeros) + quantidade_de_letras;
+
+    for each i in range(quantidade_de_letras){
+        semente = (1103515245 * semente + date.timestamp()) + 12345
+        int codigo_da_letra = (semente % 26) + 65
+        str letras = chr(codigo_da_letra)
+        addEnd(caixa, letras)
+    }
+    return str(caixa).replace(["[", "]", "'", ",", " "], "")[0:limit]
+}
+
+# Nem eu sei porque fiz isso, eu so sei que tem coisa nada aver - 'Qui coisa?' não sei...
+funct randid(str webToken){
+    list index1 = list(bytes.base64(bytes.new(webToken)))
+
+    object urnd = open('/dev/urandom', 'rb')
+    str bruto = str(urnd.read(20))
+    urnd.close()
+
+    str dig = hash.sha256(f'{bruto}{date.timestamp()}')
+    str numeros = '';
+
+    for each c in dig {
+        if (c.isdigit()) { numeros = numeros + c };
+    }
+    long semente = int(numeros) * int(numeros);
+    list box = []
+    for each i in index1 {
+        if (str(i).isalpha()){
+            addStart(box, ord(i))
+        }
+        elif (i.isdigit()){
+                char letra = chr(int(i))
+            addStart(box, ord(letra))
+        }
+        continue
+    }
+    long seed = int(id(box)) * 100000 * 999999999999999999 * 9999999999999999999 * semente
+    return bytes.base64(
+        bytes.new(
+            bytes.base64(
+                bytes.new(
+                    str(seed).replace(
+                        [" ", ".", ",", "[", "]"], ""
+                    )
+                )
+            )
+        )
+    )
+}
+
+if __name__ == "main":
+    post(
+        letter(30),
+        randid("djilfwklfgioferierhoguhguioefghiegyffdfdefufgrwfgry"),
+        randint(40)
+    )
