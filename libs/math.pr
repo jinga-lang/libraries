@@ -1,0 +1,137 @@
+flo M_PI    = 3.14159265358979323846;
+flo M_E     = 2.71828182845904523536; 
+flo M_SQRT2 = 1.41421356237309504880;
+
+funct sin(flo num) {
+    flo rad = num * (3.14159265 / 180.0); 
+    while (rad > 3.14159265) { rad = rad - 6.2831853; }
+    while (rad < -3.14159265) { rad = rad + 6.2831853; }
+   
+    flo x2 = rad * rad;
+    flo x3 = x2 *  rad;
+    flo x5 = x3 *  x2;
+    flo x7 = x5 *  x2;
+    
+    return rad - (x3 / 6.0) + (x5 / 120.0) - (x7 / 5040.0);
+}
+
+funct cos(flo num) {
+    flo rad = num * (3.14159265 / 180.0); 
+    while (rad > 3.14159265) { rad = rad - 6.2831853; }
+    while (rad < -3.14159265) { rad = rad + 6.2831853; }
+   
+    flo x2 = rad * rad;
+    flo x4 = x2 *  x2;
+    flo x6 = x4 *  x2;
+    
+    return 1.0 - (x2 / 2.0) + (x4 / 24.0) - (x6 / 720.0);
+}
+
+funct tan(flo num) {
+    flo s = sin(num);
+    flo c = cos(num);
+    if (c == 0.0) { return 0.0; } 
+    return s / c;
+}
+
+funct sqrt(flo num) {
+    if (num <= 0.0) { return 0.0; }
+    flo x = num;
+    flo raiz = 0.0;
+    int i = 0;
+    while (i < 10) {
+        raiz = 0.5 * (x + (num / x));
+        x = raiz;
+        i = i + 1;
+    }
+    return raiz;
+}
+
+funct fabs(flo num) {
+    if (num < 0.0) { return num * -1.0; }
+    return num;
+}
+
+funct exp(flo num) {
+    flo x2 = num * num;
+    flo x3 = x2 *  num;
+    flo x4 = x3 *  num;
+    flo x5 = x4 *  num;
+    return 1.0 +   num + (x2 / 2.0) + (x3 / 6.0) + (x4 / 24.0) + (x5 / 120.0);
+}
+
+funct hypot(flo x, flo y) {
+    return sqrt((x * x) + (y * y));
+}
+
+funct floor(flo num) {
+    object i = num;
+    flo f = i;
+    if (num < 0.0) {
+        if (num != f) {
+            return f - 1.0;
+        }
+    }
+    return f;
+}
+
+funct ceil(flo num) {
+    object i = num;
+    flo f = i;
+    if (num > 0.0) {
+        if (num != f) {
+            return f + 1.0;
+        }
+    }
+    return f;
+}
+
+funct round(flo num) {
+    if (num < 0.0) {
+        return floor(num - 0.5);
+    }
+    return floor(num + 0.5);
+}
+
+funct trunc(flo num) {
+    object i = num;
+    flo f = i;
+    return f;
+}
+
+funct fmod(flo x, flo y) {
+    if (y == 0.0) { return 0.0; }
+    flo quociente = trunc(x / y);
+    return x - (quociente * y);
+}
+
+funct pow(flo baseS, int exp) {
+    if (exp == 0) { return 1.0; }
+    flo resultado = 1.0;
+    int e = exp;
+    if (e < 0) { e = e * -1; }
+    
+    int i = 0;
+    while (i < e) {
+        resultado = resultado * baseS;
+        i = i + 1;
+    }
+    
+    if (exp < 0) { return 1.0 / resultado; }
+    return resultado;
+}
+
+funct log(flo x) {
+    if (x <= 0.0) { return 0.0; }
+    flo n = (x - 1.0) / (x + 1.0);
+    flo n2 = n * n;
+    flo n3 = n2 * n;
+    flo n5 = n3 * n2;
+    flo n7 = n5 * n2;
+    
+    return 2.0 * (n + (n3 / 3.0) + (n5 / 5.0) + (n7 / 7.0));
+}
+
+funct log10(flo x) { return log(x) / 2.302585092994046; }
+
+funct log2(flo x) { return log(x) / 0.6931471805599453; }
