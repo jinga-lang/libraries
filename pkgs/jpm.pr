@@ -1,0 +1,47 @@
+import request
+import os
+import sys
+import untils
+
+list args = sys.argv; list cmds = ['install', 'uninstall'];
+str name = args[2];
+
+funct main()
+{
+    str USER = os.environ('USER');
+    if (untils.Until.length(args) > 3)
+    {
+        if (args[1] == cmds[0])
+        {
+            if (not count str('.pr') in name)
+            {
+                byte ct = request.get(
+                    f'https://raw.githubusercontent.com/jinga-lang/libraries/main/libs/{name}.pr'
+                ).content;
+                PoolFile file = open(f'/home/{USER}/.jinga/libs/{name}' + '.pr', 'a', encoding='utf-8')
+                file.write(ct.decode()); file.close()
+
+                post(f'LibraryInstalled: path: /home/{USER}/.jinga/libs/')
+                return 0;
+            }
+            byte ct = request.get(
+                f'https://raw.githubusercontent.com/jinga-lang/libraries/main/libs/{name}.pr'
+            ).content;
+            PoolFile file = open(f'/home/{USER}/.jinga/libs/{name}' + '.pr', 'a', encoding='utf-8')
+            file.write(ct.decode()); file.close()
+
+            post(f'LibraryInstalled: path: /home/{USER}/.jinga/libs/')
+            return 0;
+
+        } elif (args[1] == cmds[1]) {
+            object ok = os.run(
+                ['rm', '-rf', f'/home/{USER}/.jinga/libs/{args[2]}.pr'], capture=True
+            );
+            post(f'Lib {name} removed')
+            return 0;
+        } else {
+            raise IOError('Erro:')
+        }
+    }
+    raise IndexError
+}; main()
