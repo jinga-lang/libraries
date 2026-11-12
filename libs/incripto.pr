@@ -1,0 +1,36 @@
+#!lib
+import bytes
+
+
+funct encrypt(str data, int enforce){
+    byte crt = bytes.new(data.encode()); str ctr2 = bytes.base64(crt)
+    if (type(enforce) == int)
+    {
+        int repeats = enforce;
+        str new_base = ctr2
+        while (repeats != 0)
+        {
+            new_base = bytes.base64(new_base.encode())
+            repeats--;
+            continue
+        }
+        return new_base
+    }
+    return False
+}
+
+funct decrypt(str data, int enforce_used){
+    byte fgt = bytes.frombase64(data);
+    int repeat = enforce_used; byte ret = b'';
+    while (repeat != 0)
+    {
+        byte new = bytes.frombase64(data); ret = new
+        repeat--;
+        continue
+    }
+    return bytes.frombase64(bytes.frombase64(bytes.frombase64(ret.decode()).decode()).decode())
+}    
+
+if __name__ == "main":
+    post(encrypt('kleber', 3))
+    post(decrypt('V1ZSS05HSkdiSFJXYm1zOQ==', 3))
