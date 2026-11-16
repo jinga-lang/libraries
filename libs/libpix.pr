@@ -1,0 +1,46 @@
+import request
+import qrcode
+import hash
+import os
+
+
+private enum ErrorResponseTypes
+{
+    ErrorBarCodeIncorrect = "Barcode must have exactly 44, 47 or 48 characters" || r"exactly\s+[\d,\s]+(?:or\s+\d+\s+)?characters";
+    ErrorUnauthorized = "Unauthorized";
+    ErrorInvalidApplication = "Application is missing required scope: BOLETO_VALIDATE_POST";
+}
+
+
+
+class  BoletoIsValid
+{
+    String BarCode;
+    String BaseUrl;
+    String URI_Endpoint;
+    String API_KEY;
+
+    funct search(self)
+    {
+        if (self.BaseUrl.startswith("https://"))
+        {
+            Response reqs = request.post(url=self.BaseUrl + "/" + self.URI_Endpoint, timeout=5, headers=self.API_KEY);
+            Object DataBrute = reqs.content.decode();
+            if (DataBrute.get("boleto").get("expiresDate")){
+                dict compose = {
+                    "isValid": True,
+                    "content": DataBrute
+                };
+                return compose
+            } else {
+                list Items = [ErrorResponseTypes.ErrorBarCodeIncorrect, ErrorResponseTypes.ErrorInvalidApplication, ErrorResponseTypes.ErrorUnauthorized];
+                for each it in Items
+                {
+                    if (Items[it] == DataBrute.get("error")){
+
+                    }
+                }
+            }
+        }
+    }
+}

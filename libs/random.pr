@@ -7,7 +7,7 @@ import Parsing
 # Update; 09/11/2026 - 14:33 PM
 
 funct valcp(int baseinit, int elevenindex, int lastdigits){
-    list ix = []
+    list ix = [];
     list valores = list(str(baseinit).replace(".", ""))
     for each i in valores {
         # 127.970.195

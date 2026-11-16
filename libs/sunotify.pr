@@ -1,17 +1,8 @@
 #!lib
-import os as SystemControl
+import os
 
-public class SunotiFy {
-    public funct __init__(self, String title, String body){self.tl = title; self.bd = body}
-    public funct send_linux(self){
-        try{
-           SystemControl.run(["notify-send", f"{self.tl}", f"{self.bd}"])
-        }
-        catch (Exception){
-            return Exception(f'Sunotify --@INTERNAL-ERROR: {Exception}')
-        }
-    }
+funct linux( str title, str body ){ 
+    os.run(["notify-send", f"{title}", f"{body}"]) 
 }
-
 if __name__ == "main":
-    SunotiFy('ola', 'siuuuuuuuuuuuu').send_linux()
+    linux('ola', 'siuuuuuuuuuuuu')

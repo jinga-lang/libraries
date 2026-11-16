@@ -124,8 +124,8 @@ funct pow(flo baseS, int exp) {
 funct log(flo x) {
     if (x <= 0.0) { return 0.0; }
     flo n = (x - 1.0) / (x + 1.0);
-    flo n2 = n * n;
-    flo n3 = n2 * n;
+    flo n2 = n  *  n;
+    flo n3 = n2 *  n;
     flo n5 = n3 * n2;
     flo n7 = n5 * n2;
     
