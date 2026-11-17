@@ -8,7 +8,8 @@ import jinker
 
 """
                                             Criado em @2026 ~ @2027
-    
+    author: kietza/kleberDevion
+    email: kleberdevion@proton.me - klebersantanadeoliveira07@gmail.com
     URL_FORMAT_API_CORRECT: https://api.openpix.com.br 'Without the `/`, the code already applies this.' URI_HERE
 
 """
@@ -284,4 +285,3 @@ class InfosAccount
        return Errors("Invalid URL");
     }
 }
-# ---------------------------------------------ACIMA: REGRA DE NEGOCIOS-------------------------------------
