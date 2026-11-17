@@ -1,46 +1,288 @@
+#!lib
 import request
 import qrcode
 import hash
 import os
+import date
+import jinker
 
+"""
+                                            Criado em @2026 ~ @2027
+    
+    URL_FORMAT_API_CORRECT: https://api.openpix.com.br 'Without the `/`, the code already applies this.' URI_HERE
 
-private enum ErrorResponseTypes
+"""
+
+# Catalogo de respostas de consulta a boletos: BoletoIsValid
+private enum ErrorResponseTypes_Boleto
 {
-    ErrorBarCodeIncorrect = "Barcode must have exactly 44, 47 or 48 characters" || r"exactly\s+[\d,\s]+(?:or\s+\d+\s+)?characters";
+    ErrorBarCodeIncorrect = "Barcode must have exactly 44, 47 or 48 characters";
     ErrorUnauthorized = "Unauthorized";
     ErrorInvalidApplication = "Application is missing required scope: BOLETO_VALIDATE_POST";
 }
+# --------------------------------------------------------------------------
 
+# UNTILS:
+private funct Errors(String Argument)
+{
+    return f'''
+     ErrorName: {Argument}
+     DateTime: {date.datahora()}
+    ''';
+}
+# --------------------------------------------------------------------------
 
-
+# Analise e consulta de boletos.
 class  BoletoIsValid
 {
     String BarCode;
     String BaseUrl;
     String URI_Endpoint;
-    String API_KEY;
+    String API_KEY_OR_APP_ID;
 
+    # Verifica se o boleto e valido/existe: https://developers.openpix.com.br/en/api#tag/boleto
     funct search(self)
     {
         if (self.BaseUrl.startswith("https://"))
         {
-            Response reqs = request.post(url=self.BaseUrl + "/" + self.URI_Endpoint, timeout=5, headers=self.API_KEY);
-            Object DataBrute = reqs.content.decode();
-            if (DataBrute.get("boleto").get("expiresDate")){
+            Response reqs = request.post(url=self.BaseUrl + "/" + self.URI_Endpoint, 
+                timeout=5, 
+                headers={
+                    "Authorization": f"{self.API_KEY_OR_APP_ID}"
+                }
+            );
+            Object DataBrute = reqs.get_json();
+            if (DataBrute.get("boleto").get("expiresDate"))
+            {
                 dict compose = {
-                    "isValid": True,
+                    "status": 200,
                     "content": DataBrute
                 };
                 return compose
-            } else {
-                list Items = [ErrorResponseTypes.ErrorBarCodeIncorrect, ErrorResponseTypes.ErrorInvalidApplication, ErrorResponseTypes.ErrorUnauthorized];
-                for each it in Items
-                {
-                    if (Items[it] == DataBrute.get("error")){
-
-                    }
-                }
             }
-        }
+            list Items = [
+                ErrorResponseTypes_Boleto.ErrorBarCodeIncorrect, 
+                ErrorResponseTypes_Boleto.ErrorInvalidApplication, 
+                ErrorResponseTypes_Boleto.ErrorUnauthorized
+            ];
+            for each it in Items{
+                if (it == DataBrute.get("error")){
+                    return Errors(it);
+                }
+                return Errors("ErrorTypeNotFound: 404 -- Response: " + DataBrute.get("error"))
+            }
+        };
+        return Errors("Invalid URL");
     }
 }
+# --------------------------------------------------------------------------
+
+# Catalogo de respostas de erro: InfosAccount
+private enum ErrorResponseTypes_InfosAccount
+{
+    ErrorIdInvalid = "Account ID is invalid";
+    ErrorNotImplemented = "This feature is not enabled for your company";
+    ErrorAccNotFound = "Account not found";
+    ErrorServerProvider = "Internal server error";
+}
+# --------------------------------------------------------------------------
+
+# Catalogo de respostas de erro sem conteudo: InfosAccount
+private enum  ErrorResponseTypes_InfosAccountNEW_ACC
+{
+    ErrorNotDefined = "ErroContent: ";
+}
+# --------------------------------------------------------------------------
+
+# Catalogo de respostas de erro: InfosAccount
+private enum  ErrorResponseTypes_InfosAccountDUP_ACC
+{
+    ErrorFeatureNotEnabled = "Bank account feature is not enabled";
+    ErrorApiWrong = "Wrong API type";
+}
+# --------------------------------------------------------------------------
+
+# Catalogo de respostas de erro sem conteudo: InfosAccount
+private enum  ErrorResponseTypes_InfosAccountRMV_MONEY
+{
+    ErrorNotDefined = "ErroContent: ";
+}
+# --------------------------------------------------------------------------
+
+# Catalogo de respostas de erro sem conteudo: InfosAccount
+private enum  ErrorResponseTypes_InfosAccountDEL_ACC
+{
+    ErrorInvalidHeader = "Invalid Authorization header";
+    ErrorNotFoundAccount = "Account register not found";
+    ErrorServerProvider = "Internal server error";
+}
+# --------------------------------------------------------------------------
+
+
+class InfosAccount
+{
+    String ACC_identification;
+    String BaseUrl;
+    String URI_Endpoint;
+    String API_KEY_OR_APP_ID;
+
+    # Encerrar conta: https://developers.openpix.com.br/en/api#tag/accou
+    funct closeAccount(self)
+    {
+        if (self.BaseUrl.startswith("https://"))
+        {
+            Response Reqs = request.delete(url=self.BaseUrl + "/" + self.URI_Endpoint + self.ACC_identification, 
+               timeout=5, 
+               headers={
+                   "Authorization": f"{self.API_KEY_OR_APP_ID}"
+               }
+            );
+            Object Status = Reqs.get_json();
+            if (Status.get("status"))
+            {
+                dict compose = {
+                    "status": Status.get("status"),
+                    "content": Reqs
+                };
+                return compose
+            }
+            list Items = [ErrorResponseTypes_InfosAccount.ErrorAccNotFound, ErrorResponseTypes_InfosAccount.ErrorIdInvalid, ErrorResponseTypes_InfosAccount.ErrorNotImplemented, ErrorResponseTypes_InfosAccount.ErrorServerProvider]
+            for each i in Items{
+                if (i == Status.get("error")){
+                    return Errors(Status.get("error"));
+                }
+                return Errors("ErrorTypeNotFound: 404 -- Response: " + Status.get("error"))
+            }
+        }
+        return Errors("Invalid URL");
+    }
+
+    # Cria nova conta: https://developers.openpix.com.br/en/api#tag/account/paths/~1api~1v1~1account~1%7BaccountId%7D/delete
+    funct newAccount(self)
+    {
+        if (self.BaseUrl.startswith("https://"))
+        {
+            Response Reqs = request.post(url=self.BaseUrl + "/" + self.URI_Endpoint + self.ACC_identification, 
+               timeout=5, 
+               headers={
+                  "Authorization": f"{self.API_KEY_OR_APP_ID}"
+               }
+            );
+            Object DataBrute = Reqs.get_json();
+            if (DataBrute.get("account"))
+            {
+                dict compose = {
+                    "status": 200,
+                    "content":  DataBrute.get("account")
+                };
+                return compose
+            }
+            return Errors(ErrorResponseTypes_InfosAccountNEW_ACC.ErrorNotDefined + str(DataBrute.get("error")))
+        }
+        return Errors("Invalid URL");
+    }
+
+    # Buscar contas: https://developers.openpix.com.br/en/api#tag/account/paths/~1api~1v1~1account~1%7BaccountId%7D/get
+    funct giveAccounts(self, int amt=10, str mail_user="tester@gmail.com", int skip=0)
+    {
+        if (self.BaseUrl.startswith("https://"))
+        {
+            str ok_mail = mail_user.replace(["@"], "0%40"); Object ParamsArgURL = f"email={ok_mail}&skip={skip}&limit={amt}";
+            Response Data = request.get(url=self.BaseUrl + "/" + self.URI_Endpoint + "/" + ParamsArgURL, 
+                timeout=5,
+                headers={
+                    "Authorization": f"{self.API_KEY_OR_APP_ID}"
+                }
+            );
+            Object Getjson = Data.get_json();
+            if (Getjson.get("accounts"))
+            {
+                Object PayloadAccounts = {
+                    "status": 200,
+                    "content": Getjson.get("accounts")
+                };
+                return PayloadAccounts;
+            }
+            return Errors(ErrorResponseTypes_InfosAccountNEW_ACC.ErrorNotDefined + str(Data.get("error")))
+        }
+        return Errors("Invalid URL");
+    }
+
+    # Duplicar conta: https://developers.openpix.com.br/en/api#tag/account/paths/~1api~1v1~1account~1/get
+    funct duplicateAccount(self)
+    {
+        Response Reqs = request.post(url=self.BaseUrl + "/" + self.URI_Endpoint, timeout=5, headers={"Authorization": f"{self.API_KEY_OR_APP_ID}"}); Object Data = Reqs.get_json();
+        if (self.BaseUrl.startswith("https://"))
+        {   
+            if (Data.get("account"))
+            {
+                dict compose = {
+                    "status": 200,
+                    "content": Data.get("account")
+                };
+                return compose;
+            }
+            list Items = [ErrorResponseTypes_InfosAccountDUP_ACC.ErrorApiWrong, ErrorResponseTypes_InfosAccountDUP_ACC.ErrorFeatureNotEnabled];
+            for each i in Items{
+                if (i == Data.get("error")){
+                    return Errors(Data.get("error"))
+                }
+                return Errors("ErrorTypeNotFound: 404 -- Response: " + Data.get("error"))
+            }
+        }
+        return Errors("Invalid URL");
+    }
+
+    # Remover dinheiro de uma conta: https://developers.openpix.com.br/en/api#tag/account/paths/~1api~1v1~1account/post
+    funct removeMoneyAccount(self, flo money)
+    {
+        if (self.BaseUrl.startswith("https://"))
+        {
+            Response Reqs = request.post(url=self.BaseUrl + self.URI_Endpoint + self.ACC_identification + "/withdraw", 
+                timeout=5, 
+                headers={
+                    "Authorization": f"{self.API_KEY_OR_APP_ID}"
+                }, 
+                body={"value": money}
+            );
+            Object Data = Reqs.get_json();
+            if (Data.get("withdraw"))
+            {
+                dict compose = {
+                    "status": 200,
+                    "content": Data.get("withdraw")
+                };
+                return compose;
+            }
+            return Errors(ErrorResponseTypes_InfosAccountRMV_MONEY.ErrorNotDefined + Data.get("error"));
+        }
+        return Errors("Invalid URL");
+    }
+
+    # Deletar conta: https://developers.openpix.com.br/en/api#tag/account-register
+    funct deleteAccount(self)
+    {
+       if (self.BaseUrl.startswith("https://"))
+       {
+            Response Reqs = request.delete(url=self.BaseUrl + self.URI_Endpoint + self.ACC_identification, timeout=5); Object Data = Reqs.get_json();
+            if (Data.get("message"))
+            {
+                dict compose = {
+                    "status": 200,
+                    "content": Data
+                };
+                return compose
+            }
+            list Items = [ErrorResponseTypes_InfosAccountDEL_ACC.ErrorInvalidHeader, ErrorResponseTypes_InfosAccountDEL_ACC.ErrorNotFoundAccount, ErrorResponseTypes_InfosAccountDEL_ACC.ErrorServerProvider];
+            for each i in Items{
+                if (i == Data.get("error")){
+                    return Errors(Data.get("error"))
+                }
+                return Errors("ErrorTypeNotFound: 404 -- Response: " + Data.get("error"))
+            }
+       }
+       return Errors("Invalid URL");
+    }
+}
+# ---------------------------------------------ACIMA: REGRA DE NEGOCIOS-------------------------------------
+# ---------------------------------------------ABAIXO:      CLI        -------------------------------------
