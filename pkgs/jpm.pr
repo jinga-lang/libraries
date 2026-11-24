@@ -34,7 +34,7 @@ funct main()
             return 0;
 
         } elif (args[1] == cmds[1]) {
-            object ok = os.run(
+            os.run(
                 ['rm', '-rf', f'/home/{USER}/.jinga/libs/{args[2]}.pr'], capture=True
             );
             post(f'Lib {name} removed')
